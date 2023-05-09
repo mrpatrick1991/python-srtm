@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Tuple, Callable
 from zipfile import ZipFile
-
+import gzip
 from srtm.utilities import get_srtm3_file_path, get_srtm1_file_path
 from srtm.base_coordinates import RasterBaseCoordinates
 
@@ -39,7 +39,12 @@ class HeightMap:
         if not force and self.raster is not None:
             return
 
-        if ".zip" in self.path.suffixes:
+        if ".gz" in self.path.suffixes:
+            with gzip.open(self.path, 'rb') as f:
+                self.raster = f.read()
+
+
+        elif ".zip" in self.path.suffixes:
             zipped_files = ZipFile(self.path).namelist()
             zipped_files = [name for name in zipped_files if ".hgt" in name]
             assert len(zipped_files) == 1, (
